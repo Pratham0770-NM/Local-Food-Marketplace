@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Food Marketplace Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Role Selection -->
+<section id="roleSelection" class="center-section fade-in">
+  <h1>🌿 Local Food Marketplace</h1>
+  <p>Select your role to enter the dashboard</p>
+  <div class="role-buttons">
+    <button id="farmerRoleBtn" class="animated-btn">I’m a Farmer</button>
+    <button id="buyerRoleBtn" class="animated-btn">I’m a Buyer</button>
+  </div>
+</section>
+
+<!-- Dashboard -->
+<section id="dashboard" class="fade-in" style="display:none;">
+  <h2 id="dashboardTitle"></h2>
+
+  <!-- Farmer Dashboard -->
+  <div id="farmerDashboard" class="dashboard-section" style="display:none;">
+    <h3>Create Farmer Profile</h3>
+    <form id="farmerForm">
+      <input type="text" id="farmerName" placeholder="Name" required>
+      <input type="text" id="farmerLocation" placeholder="Location" required>
+      <textarea id="farmerDesc" placeholder="Description"></textarea>
+
+      <h4>Add Products</h4>
+      <div id="productList"></div>
+      <div class="product-fields">
+        <input type="text" id="prodName" placeholder="Product Name">
+        <input type="number" id="prodPrice" placeholder="Price (₹)">
+        <input type="text" id="prodUnit" placeholder="Unit">
+        <input type="number" id="prodQty" placeholder="Quantity">
+        <input type="text" id="prodDates" placeholder="Available Dates">
+        <button type="button" id="addProdBtn" class="animated-btn small-btn">+ Add Product</button>
+      </div>
+
+      <button type="submit" class="animated-btn">Save Profile</button>
+    </form>
+
+    <h3>Buyer Profiles</h3>
+    <input type="text" id="searchBuyer" placeholder="Search buyers" class="search-bar">
+    <div id="buyerProfiles" class="profiles-grid"></div>
+  </div>
+
+  <!-- Buyer Dashboard -->
+  <div id="buyerDashboard" class="dashboard-section" style="display:none;">
+    <h3>Create Buyer Profile</h3>
+    <form id="buyerForm">
+      <input type="text" id="buyerName" placeholder="Name" required>
+      <input type="email" id="buyerEmail" placeholder="Email" required>
+      <button type="submit" class="animated-btn">Save Profile</button>
+    </form>
+
+    <h3>Farmer Profiles</h3>
+    <input type="text" id="searchFarmer" placeholder="Search farmers" class="search-bar">
+    <div id="farmerProfiles" class="profiles-grid"></div>
+  </div>
+</section>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="chat-modal" style="display:none;">
+  <div class="chat-content">
+    <span id="closeChat">&times;</span>
+    <h4 id="chatWith"></h4>
+    <div id="chatMessages" class="chat-messages"></div>
+    <input type="text" id="chatInput" placeholder="Type a message">
+    <button id="sendMsg" class="animated-btn small-btn">Send</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+  <head>

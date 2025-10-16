@@ -1,0 +1,203 @@
+// --- Data storage ---
+let farmers = JSON.parse(localStorage.getItem('farmers')) || [];
+let buyers = JSON.parse(localStorage.getItem('buyers')) || [];
+let chats = JSON.parse(localStorage.getItem('chats')) || {};
+let tempProducts = [];
+
+// --- Elements ---
+const roleSelection = document.getElementById('roleSelection');
+const farmerRoleBtn = document.getElementById('farmerRoleBtn');
+const buyerRoleBtn = document.getElementById('buyerRoleBtn');
+const dashboard = document.getElementById('dashboard');
+const dashboardTitle = document.getElementById('dashboardTitle');
+
+const farmerDashboard = document.getElementById('farmerDashboard');
+const buyerDashboard = document.getElementById('buyerDashboard');
+
+const farmerForm = document.getElementById('farmerForm');
+const buyerForm = document.getElementById('buyerForm');
+const addProdBtn = document.getElementById('addProdBtn');
+const productList = document.getElementById('productList');
+
+const farmerProfiles = document.getElementById('farmerProfiles');
+const buyerProfiles = document.getElementById('buyerProfiles');
+
+const searchFarmer = document.getElementById('searchFarmer');
+const searchBuyer = document.getElementById('searchBuyer');
+
+const chatModal = document.getElementById('chatModal');
+const chatWith = document.getElementById('chatWith');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendMsg = document.getElementById('sendMsg');
+const closeChat = document.getElementById('closeChat');
+
+let currentChatKey = null;
+
+// --- Role selection ---
+farmerRoleBtn.onclick = ()=>{
+  roleSelection.style.display='none';
+  dashboard.style.display='block';
+  dashboardTitle.textContent='Farmer Dashboard';
+  farmerDashboard.style.display='block';
+  renderBuyerProfiles();
+};
+
+buyerRoleBtn.onclick = ()=>{
+  roleSelection.style.display='none';
+  dashboard.style.display='block';
+  dashboardTitle.textContent='Buyer Dashboard';
+  buyerDashboard.style.display='block';
+  renderFarmerProfiles();
+};
+
+// --- Add product ---
+addProdBtn.onclick = ()=>{
+  const name = document.getElementById('prodName').value.trim();
+  const price = Number(document.getElementById('prodPrice').value) || 0;
+  const unit = document.getElementById('prodUnit').value.trim() || 'unit';
+  const qty = Number(document.getElementById('prodQty').value) || 0;
+  const dates = document.getElementById('prodDates').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!name) return alert('Enter product name');
+
+  tempProducts.push({ name, price, unit, qty, dates });
+  renderTempProducts();
+  ['prodName','prodPrice','prodUnit','prodQty','prodDates'].forEach(id=>document.getElementById(id).value='');
+};
+
+function renderTempProducts(){
+  productList.innerHTML='';
+  tempProducts.forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.textContent=`${p.name} - ₹${p.price}/${p.unit} (Qty:${p.qty})`;
+    const removeBtn=document.createElement('button');
+    removeBtn.textContent='Remove';
+    removeBtn.onclick=()=>{ tempProducts.splice(i,1); renderTempProducts(); };
+    div.appendChild(removeBtn);
+    productList.appendChild(div);
+  });
+}
+
+// --- Submit farmer form ---
+farmerForm.onsubmit = e=>{
+  e.preventDefault();
+  const name = document.getElementById('farmerName').value.trim();
+  const loc = document.getElementById('farmerLocation').value.trim();
+  const desc = document.getElementById('farmerDesc').value.trim();
+  if(!name||!loc) return alert('Enter all fields');
+
+  farmers.push({ name, loc, desc, products: tempProducts.slice() });
+  localStorage.setItem('farmers', JSON.stringify(farmers));
+  tempProducts = [];
+  renderTempProducts();
+  renderFarmerProfiles();
+  farmerForm.reset();
+  alert('Farmer profile saved!');
+};
+
+// --- Submit buyer form ---
+buyerForm.onsubmit = e=>{
+  e.preventDefault();
+  const name = document.getElementById('buyerName').value.trim();
+  const email = document.getElementById('buyerEmail').value.trim();
+  if(!name||!email) return alert('Enter all fields');
+
+  buyers.push({ name, email });
+  localStorage.setItem('buyers', JSON.stringify(buyers));
+  renderBuyerProfiles();
+  buyerForm.reset();
+  alert('Buyer profile saved!');
+};
+
+// --- Render Farmer Profiles ---
+function renderFarmerProfiles(container=farmerProfiles){
+  container.innerHTML='';
+  farmers.forEach((f,i)=>{
+    const div=document.createElement('div');
+    div.className='profile-card';
+    div.innerHTML=`<h3>${f.name}</h3><p>${f.loc}</p><p>${f.desc}</p>
+                   <p>Products: ${f.products.map(p=>p.name).join(', ')}</p>
+                   <button class="message-btn" onclick="openChat('farmer${i}')">Message</button>`;
+    container.appendChild(div);
+  });
+}
+
+// --- Render Buyer Profiles ---
+function renderBuyerProfiles(container=buyerProfiles){
+  container.innerHTML='';
+  buyers.forEach((b,i)=>{
+    const div=document.createElement('div');
+    div.className='profile-card';
+    div.innerHTML=`<h3>${b.name}</h3><p>Email: ${b.email}</p>
+                   <button class="message-btn" onclick="openChat('buyer${i}')">Message</button>`;
+    container.appendChild(div);
+  });
+}
+
+// --- Search functionality ---
+searchFarmer?.addEventListener('input', ()=>{
+  const query = searchFarmer.value.toLowerCase();
+  const results = farmers.filter(f=>f.name.toLowerCase().includes(query) || f.loc.toLowerCase().includes(query) || f.products.some(p=>p.name.toLowerCase().includes(query)));
+  renderFarmerProfilesFromArray(results);
+});
+
+function renderFarmerProfilesFromArray(arr){
+  farmerProfiles.innerHTML='';
+  arr.forEach((f,i)=>{
+    const div=document.createElement('div');
+    div.className='profile-card';
+    div.innerHTML=`<h3>${f.name}</h3><p>${f.loc}</p><p>${f.desc}</p>
+                   <p>Products: ${f.products.map(p=>p.name).join(', ')}</p>
+                   <button class="message-btn" onclick="openChat('farmer${i}')">Message</button>`;
+    farmerProfiles.appendChild(div);
+  });
+}
+
+searchBuyer?.addEventListener('input', ()=>{
+  const query = searchBuyer.value.toLowerCase();
+  const results = buyers.filter(b=>b.name.toLowerCase().includes(query) || b.email.toLowerCase().includes(query));
+  renderBuyerProfilesFromArray(results);
+});
+
+function renderBuyerProfilesFromArray(arr){
+  buyerProfiles.innerHTML='';
+  arr.forEach((b,i)=>{
+    const div=document.createElement('div');
+    div.className='profile-card';
+    div.innerHTML=`<h3>${b.name}</h3><p>Email: ${b.email}</p>
+                   <button class="message-btn" onclick="openChat('buyer${i}')">Message</button>`;
+    buyerProfiles.appendChild(div);
+  });
+}
+
+// --- Chat functionality ---
+function openChat(key){
+  currentChatKey = key;
+  chatModal.style.display='flex';
+  chatWith.textContent = key.startsWith('farmer') ? `Chat with ${farmers[Number(key.replace('farmer',''))].name}` : `Chat with ${buyers[Number(key.replace('buyer',''))].name}`;
+  renderChatMessages();
+}
+
+function renderChatMessages(){
+  chatMessages.innerHTML='';
+  if(chats[currentChatKey]){
+    chats[currentChatKey].forEach(msg=>{
+      const p = document.createElement('p');
+      p.textContent = msg;
+      chatMessages.appendChild(p);
+    });
+  }
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+sendMsg.onclick = ()=>{
+  const msg = chatInput.value.trim();
+  if(!msg) return;
+  if(!chats[currentChatKey]) chats[currentChatKey]=[];
+  chats[currentChatKey].push(msg);
+  localStorage.setItem('chats', JSON.stringify(chats));
+  chatInput.value='';
+  renderChatMessages();
+}
+
+closeChat.onclick = ()=>{ chatModal.style.display='none'; };
